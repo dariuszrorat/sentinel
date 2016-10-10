@@ -33,7 +33,9 @@ return array(
                 'directory' => APPPATH . 'inspection',
             ),
             'self_inspection' => true,
-            'on_detection' => Sentinel::NOTHING
+            'on_detection' => Sentinel::NOTHING,
+            'caching'      => false,
+            'cache_life'   => 1209600,
         ),
         'quarantine' => array(
             'maxlife' => 604800,

@@ -11,11 +11,11 @@
       }       
       header
       {
-background: #d5cea6; /* Old browsers */
-background: -moz-linear-gradient(top, #d5cea6 0%, #b7ad70 100%); /* FF3.6-15 */
-background: -webkit-linear-gradient(top, #d5cea6 0%,#b7ad70 100%); /* Chrome10-25,Safari5.1-6 */
-background: linear-gradient(to bottom, #d5cea6 0%,#b7ad70 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', endColorstr='#b7ad70',GradientType=0 );          
+          background: #d5cea6; /* Old browsers */
+          background: -moz-linear-gradient(top, #d5cea6 0%, #b7ad70 100%); /* FF3.6-15 */
+          background: -webkit-linear-gradient(top, #d5cea6 0%,#b7ad70 100%); /* Chrome10-25,Safari5.1-6 */
+          background: linear-gradient(to bottom, #d5cea6 0%,#b7ad70 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', endColorstr='#b7ad70',GradientType=0 );          
           height: 30px;
           padding-top: 5px;
           padding-bottom:15px;  
@@ -28,7 +28,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
       .menu
       {
           float: left;
-          width: 150px;          
+          width: 200px;          
           height: 550px;          
           background: #d2dfed; /* Old browsers */
           background: -moz-linear-gradient(left, #d2dfed 0%, #a6c0e3 0%, #c8d7eb 26%, #bed0ea 51%, #afc7e8 62%, #bad0ef 75%, #99b5db 88%, #799bc8 100%); /* FF3.6-15 */
@@ -39,7 +39,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
       .menu a
       {
           display: block;
-          width:140px;
+          width:190px;
           height: 30px;
           background: #f2f5f6; /* Old browsers */
           background: -moz-linear-gradient(left, #f2f5f6 0%, #c8d7dc 100%); /* FF3.6-15 */
@@ -68,7 +68,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
       {
           float: left;
           border: 1px solid #000;
-          width: 848px;
+          width: 798px;
           height: 548px;
           position: relative;
       }
@@ -96,12 +96,12 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
       #result-area 
       {
           font: 12px "Lucida Grande", Sans-Serif;
-          height: 520px;
+          height: 470px;
           overflow: auto;
           padding: 10px;
           background: white;
           word-wrap: break-word;
-          width: 820px;
+          width: 770px;
       }
       #result-area p 
       {
@@ -117,6 +117,10 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
           float: left;
           display: inline block;
           width: 50px;
+          text-align: center;
+      }
+      .result-title
+      {
           text-align: center;
       }
       footer
@@ -136,14 +140,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
     <H1>Antivirus sentinel module</H1>
     </header>
     <div class="menu">
-        <a href="javascript:checksumUpdate()">Update checksums</a>
+        <a href="javascript:registerFiles()">Register files</a>
+        <a href="javascript:findUnregistered()">Find unregistered</a>
+        <a href="javascript:findModified()">Find modified</a>
+        <a href="javascript:findDeleted()">Find deleted</a>
         <a href="javascript:createBackup()">Backup files</a>
-        <a href="javascript:checksumCheck()">Inspect</a>
     </div>
     <div class="results" id="result">
         <div class="message" id="message">
             <span class="message-info" id="message-info">Updating checksums...</span>
         </div>
+        <H4 class="result-title" id="result-title"></H4>
         <div id="result-area"></div>
     </div>
     <footer>
@@ -152,19 +159,21 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
 	    src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     </script>
     <script>
-        function checksumUpdate()
+        function registerFiles()
         {
-            $('#message-info').html("Updating checksums...");
+            $('#message-info').html("Registering files...");
             $('#message').show();
             $('#result-area').html("");
+            $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/update",
+                url: "/sentinel/register",
                 data: {},
                 dataType: "json",
                 success: function (data)
                 {
                     $('#message').hide();
+                    $('#result-title').html('List of registered files');
                     for (var i=0; i < data.length; i++)
                     {
                         $('#result-area').append($("<p><B>File: </B>" + data[i].file + "<BR><B>Checksum: </B>" + data[i].checksum + "</p>")); 
@@ -174,21 +183,22 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
             
         }         
         
-        function checksumCheck()
+        function findModified()
         {
-            $('#message-info').html("Checking checksums...");
+            $('#message-info').html("Search for modified files...");
             $('#message').show();
             $('#result-area').html("");
+            $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/check",
+                url: "/sentinel/modified",
                 data: {},
                 dataType: "json",
                 success: function (data)
                 {
                     if (data.length == 0)
                     {
-                        $('#message-info').html("No suspicious or infected files detected.");                        
+                        $('#message-info').html("No modified or suspicious files detected.");                        
                         setTimeout(function () 
                         {
                             $('#message').fadeOut(1000);
@@ -197,6 +207,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
                     else
                     {
                         $('#message').hide();
+                        $('#result-title').html('List of modified files');
                         for (var i=0; i < data.length; i++)
                         {
                             $('#result-area').append($("<p><B>File: </B>" + data[i].file 
@@ -213,12 +224,93 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
                 }
             });            
         }      
+
+        function findUnregistered()
+        {
+            $('#message-info').html("Search for unregistered files...");
+            $('#message').show();
+            $('#result-area').html("");
+            $('#result-title').html("");
+            $.ajax({
+                type: "GET",
+                url: "/sentinel/unregistered",
+                data: {},
+                dataType: "json",
+                success: function (data)
+                {
+                    if (data.length == 0)
+                    {
+                        $('#message-info').html("No unregistered or suspicious files detected.");                        
+                        setTimeout(function () 
+                        {
+                            $('#message').fadeOut(1000);
+                        }, 4000);                        
+                    }
+                    else
+                    {
+                        $('#message').hide();
+                        $('#result-title').html('List of unregistered files');
+                        for (var i=0; i < data.length; i++)
+                        {
+                            $('#result-area').append($("<p><B>File: </B>" + data[i].file 
+                            + "<BR><B>Checksum: </B>" + data[i].checksum 
+                            + '<span class="operations">'
+                            + '<a href="javascript:register(' + data[i].id + ')" class="operation">Register</a>'
+                            + '<a href="javascript:deleteFile(' + data[i].id + ')" class="operation">Delete</a>'
+                            + '</span>'
+                            + "</p>")); 
+                        }
+                    }
+                }
+            });            
+        }      
+
+        function findDeleted()
+        {
+            $('#message-info').html("Search for deleted files...");
+            $('#message').show();
+            $('#result-area').html("");
+            $('#result-title').html("");
+            $.ajax({
+                type: "GET",
+                url: "/sentinel/deleted",
+                data: {},
+                dataType: "json",
+                success: function (data)
+                {
+                    if (data.length == 0)
+                    {
+                        $('#message-info').html("No deleted files detected.");                        
+                        setTimeout(function () 
+                        {
+                            $('#message').fadeOut(1000);
+                        }, 4000);                        
+                    }
+                    else
+                    {
+                        $('#message').hide();
+                        $('#result-title').html('List of deleted files');
+                        for (var i=0; i < data.length; i++)
+                        {
+                            $('#result-area').append($("<p><B>File: </B>" + data[i].file 
+                            + "<BR><B>Checksum: </B>" + data[i].checksum 
+                            + '<span class="operations">'
+                            + '<a href="javascript:restoreFile(' + data[i].id + ')" class="operation">Restore</a>'
+                            + '<a href="javascript:forgetDeleted(' + data[i].id + ')" class="operation">Forget</a>'
+                            + '</span>'
+                            + "</p>")); 
+                        }
+                    }
+                }
+            });            
+        }      
         
         function createBackup()
         {
             $('#message-info').html("Backup files...");
             $('#message').show();
             $('#result-area').html("");
+            $('#result-title').html("");
             $.ajax({
                 type: "GET",
                 url: "/sentinel/backup",
@@ -234,7 +326,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#d5cea6', end
         function updateChecksum(id)
         {
             $('#message-info').html("Updating checksum...");
-            $('#message').show();
+            $('#message').show();            
              
             $.ajax({
                 type: "POST",

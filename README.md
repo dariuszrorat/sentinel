@@ -62,13 +62,3 @@ return array(
     )
 );
 ```
-
-## Example Screens
-
-#### Update checksums
-
-![Updating checksums](images/update_checksums.png)
-
-#### Inspection results with suspicious files
-
-![Inspection results](images/inspection_results.png)

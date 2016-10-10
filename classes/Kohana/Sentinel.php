@@ -14,8 +14,10 @@ class Kohana_Sentinel
 	 * @var  Config
 	 */
 	protected $_config = array();
-    protected $_checksums = array();
-    protected $_changes = array();
+    protected $_registered = array();
+    protected $_modified = array();
+    protected $_unregistered = array();
+    protected $_deleted = array();
     
     protected $_id = 0;
 
@@ -87,48 +89,62 @@ class Kohana_Sentinel
 		throw new Sentinel_Exception('Cloning of Kohana_Sentinel objects is forbidden');
 	}
     
-    public function checksums()
+    public function registered()
     {
-        return $this->_checksums;
+        return $this->_registered;
     }
     
-    public function changes()
+    public function modified()
     {
-        return $this->_changes;
+        return $this->_modified;
     }
     
-    public function check()
+    public function unregistered()
+    {
+        return $this->_unregistered;
+    }
+    
+    public function deleted()
+    {
+        return $this->_deleted;
+    }
+    
+    public function find_modified()
     {
         $checkdir = $this->_config['inspection']['checksum_storage']['directory'];
-        $checkfile = $checkdir . DIRECTORY_SEPARATOR . sha1(serialize($this->_config)) . '.ser';
+        $checkfile = $checkdir . DIRECTORY_SEPARATOR . 'registered.ser';
         if (realpath($checkfile))
         {
             $checksums = unserialize(file_get_contents($checkfile));
             foreach ($checksums as $item)
-            {
-                $id = $item['id'];
+            {                
                 $file = $item['file'];
-                $checksum = $item['checksum'];
-                $fchecksum = sha1_file($file);
-                if ($checksum !== $fchecksum)
+                
+                if (realpath($file))
                 {
-                    $this->_changes[] = array(
-                        'id' => $id,
-                        'file' => $file,
-                        'original_checksum' => $checksum,
-                        'new_checksum' => $fchecksum
-                    );
+                    $id = $item['id'];
+                    $checksum = $item['checksum'];                    
+                    $fchecksum = sha1_file($file);
+                    if ($checksum !== $fchecksum)
+                    {
+                        $this->_modified[] = array(
+                            'id' => $id,
+                            'file' => $file,
+                            'original_checksum' => $checksum,
+                            'new_checksum' => $fchecksum
+                        );
+                    }
                 }
             }
-            return empty($this->_changes);
+            return empty($this->_modified);
         }
         return false;
     }
-
+    
     public function update_checksum($id)
     {
         $checkdir = $this->_config['inspection']['checksum_storage']['directory'];
-        $checkfile = $checkdir . DIRECTORY_SEPARATOR . sha1(serialize($this->_config)) . '.ser';
+        $checkfile = $checkdir . DIRECTORY_SEPARATOR . 'registered.ser';
         
         if (realpath($checkfile))
         {
@@ -148,7 +164,60 @@ class Kohana_Sentinel
         return false;
     }
     
-    public function update()
+    public function find_unregistered()
+    {
+        $checkdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $checkfile = $checkdir . DIRECTORY_SEPARATOR . 'registered.ser';
+        $checksums = array();
+        $directories = $this->_config['directories']['scanned'];
+        $this->_id = 0;
+        
+        if (realpath($checkfile))
+        {
+            $checksums = unserialize(file_get_contents($checkfile));
+        }        
+                        
+        foreach ($directories as $dir)
+        {
+            $finfo = new SplFileInfo($dir);
+            $this->_find_unregistered($finfo, $checksums);
+        }
+        
+        $outdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $outfile = $outdir . DIRECTORY_SEPARATOR . 'unregistered.ser';
+        file_put_contents($outfile, serialize($this->_unregistered), LOCK_EX);
+
+        return;
+    }
+
+    public function find_deleted()
+    {
+        $checkdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $checkfile = $checkdir . DIRECTORY_SEPARATOR . 'registered.ser';
+        $registered = array();
+        $directories = $this->_config['directories']['scanned'];                
+        
+        if (realpath($checkfile))
+        {
+            $registered = unserialize(file_get_contents($checkfile));
+        }        
+        
+        foreach ($registered as $item)
+        {
+            if (!realpath($item['file']))
+            {
+                $this->_deleted[] = $item;
+            }
+        }
+                                
+        $outdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $outfile = $outdir . DIRECTORY_SEPARATOR . 'deleted.ser';
+        file_put_contents($outfile, serialize($this->_unregistered), LOCK_EX);
+
+        return;
+    }
+    
+    public function register_files()
     {
         $this->_id = 0;
         $directories = $this->_config['directories']['scanned'];
@@ -157,10 +226,11 @@ class Kohana_Sentinel
         {
             $finfo = new SplFileInfo($dir);            
             $this->_calculate_checksums($finfo);
-            $outdir = $this->_config['inspection']['checksum_storage']['directory'];
-            $outfile = $outdir . DIRECTORY_SEPARATOR . sha1(serialize($this->_config)) . '.ser';
-            file_put_contents($outfile, serialize($this->_checksums), LOCK_EX);
         }
+        
+        $outdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $outfile = $outdir . DIRECTORY_SEPARATOR . 'registered.ser';
+        file_put_contents($outfile, serialize($this->_registered), LOCK_EX);
         return;
     }
     
@@ -172,13 +242,16 @@ class Kohana_Sentinel
 				try
 				{
                     $fpath = $file->getRealPath();
-                    $checksum = sha1_file($fpath);
-                    $this->_id += 1;
-                    $this->_checksums[] = array(       
-                        'id' => $this->_id,
-                        'file' => $fpath,
-                        'checksum' => $checksum
+                    if (!in_array($file->getFilename(), $this->_config['ignored']['files']))
+                    {    
+                        $checksum = sha1_file($fpath);
+                        $this->_id += 1;
+                        $this->_registered[] = array(       
+                            'id' => $this->_id,
+                            'file' => $fpath,
+                            'checksum' => $checksum
                         );
+                    }    
 				}
 				catch (ErrorException $e)
 				{
@@ -192,34 +265,111 @@ class Kohana_Sentinel
 			// Else, is directory
 			elseif ($file->isDir())
 			{
-				// Create new DirectoryIterator
-				$files = new DirectoryIterator($file->getPathname());
-
-				// Iterate over each entry
-				while ($files->valid())
+				if (!in_array($file->getPathname(), $this->_config['ignored']['directories']))
 				{
-					// Extract the entry name
-					$name = $files->getFilename();
+                    // Create new DirectoryIterator
+                    $files = new DirectoryIterator($file->getPathname());
+                
+                    // Iterate over each entry
+                    while ($files->valid())
+                    {
+					    // Extract the entry name
+                        $name = $files->getFilename();
 
-					// If the name is not a dot
-					if ($name != '.' AND $name != '..')
-					{
-						// Create new file resource
-						$fp = new SplFileInfo($files->getRealPath());
-						// Delete the file
-						$this->_calculate_checksums($fp);
-					}
+                        // If the name is not a dot
+                        if ($name != '.' AND $name != '..')
+                        {
+						    // Create new file resource
+                            $fp = new SplFileInfo($files->getRealPath());
+                            // Delete the file
+                            $this->_calculate_checksums($fp);
+                        }
 
-					// Move the file pointer on
-					$files->next();
+					    // Move the file pointer on
+                        $files->next();
+                    }					
 				}
-
 			}
 			else
 			{
 				// We get here if a file has already been deleted
 				return;
 			}		        
+    }
+
+    protected function _find_unregistered(SplFileInfo $file, array $checksums)
+    {
+			// If is file
+			if ($file->isFile())
+			{
+				try
+				{
+                    $fpath = $file->getRealPath();                    
+                    if (!in_array($file->getFilename(), $this->_config['ignored']['files']) && !$this->_in_list($fpath, $checksums))
+                    {
+                        $checksum = sha1_file($fpath);
+                        $this->_id += 1;
+                        $this->_unregistered[] = array(       
+                            'id' => $this->_id,
+                            'file' => $fpath,
+                            'checksum' => $checksum
+                        );
+                    }    
+				}
+				catch (ErrorException $e)
+				{
+					// Catch any delete file warnings
+					if ($e->getCode() === E_WARNING)
+					{
+						throw new Sentinel_Exception(__METHOD__.' failed to open file : :file', array(':file' => $file->getRealPath()));
+					}
+				}
+			}
+			// Else, is directory
+			elseif ($file->isDir())
+			{
+                if (!in_array($file->getPathname(), $this->_config['ignored']['directories']))
+                {    
+				    // Create new DirectoryIterator
+                    $files = new DirectoryIterator($file->getPathname());
+
+                    // Iterate over each entry
+                    while ($files->valid())
+                    {
+                        // Extract the entry name
+                        $name = $files->getFilename();
+
+                        // If the name is not a dot
+                        if ($name != '.' AND $name != '..')
+                        {
+                            // Create new file resource
+                            $fp = new SplFileInfo($files->getRealPath());
+                            // Delete the file
+                            $this->_find_unregistered($fp, $checksums);
+                        }
+
+                        // Move the file pointer on
+                        $files->next();
+                    }
+                }
+			}
+			else
+			{
+				// We get here if a file has already been deleted
+				return;
+			}		        
+    }
+    
+    protected function _in_list($file, $list)
+    {
+        foreach ($list as $item)
+        {
+            if ($item['file'] == $file)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
