@@ -40,6 +40,19 @@ return array(
         'quarantine' => array(
             'maxlife' => 604800,
             'gc' => 500
-        )
+        ),
+        'autoresponder' => array(
+            'driver' => 'email',
+            'enabled' => false,
+            'project_name' => 'Kohana',
+            'email' => array(
+                'sender'    => 'sender@domain',
+                'recipient' => 'recipient@domain',
+                'mime_type' => 'text/html',
+            ),
+            'sms' => array(
+                'recipient' => 'your phone number',
+            ),
+        ),
     )
 );

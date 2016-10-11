@@ -152,7 +152,14 @@ class Kohana_Sentinel
                 }
             }
         }
-        return !empty($this->_modified);
+        if (!empty($this->_modified))
+        {
+            $this->_run_autoresponder('List of modified files', $this->_modified, true);
+            return true;
+        }
+
+        return false;
+
     }
 
     public function find_unregistered()
@@ -170,7 +177,9 @@ class Kohana_Sentinel
         $this->_unregistered = $inspector->unregistered();
         if (!empty($this->_unregistered))
         {
-            return $inspector->save('unregistered.ser', $this->_unregistered);
+            $result = $inspector->save('unregistered.ser', $this->_unregistered);
+            $this->_run_autoresponder('List of unregistered files', $this->_unregistered);
+            return $result;
         }
         return false;
     }
@@ -190,7 +199,9 @@ class Kohana_Sentinel
         }
         if (!empty($this->_deleted))
         {
-            return $inspector->save('deleted.ser', $this->_deleted);
+            $result = $inspector->save('deleted.ser', $this->_deleted);
+            $this->_run_autoresponder('List of deleted files', $this->_deleted);
+            return $result;
         }
         return;
     }
@@ -223,6 +234,41 @@ class Kohana_Sentinel
             return $result;
         }
         return false;
+    }
+
+    protected function _run_autoresponder($title, $data, $modified = false)
+    {
+            $enable_autoresponder = $this->_config['autoresponder']['enabled'];
+            if ($enable_autoresponder === true)
+            {
+                $driver = $this->_config['autoresponder']['driver'];
+                $autoresponder = Alarm_Autoresponder::instance($driver, $this->_config);
+                $results = "";
+                foreach ($data as $item)
+                {
+                    if ($modified === true)
+                    {
+                        $results .= "<P><B>File: </B>" . $item['file']
+                          . "<BR><B>Original checksum: </B>" . $item['original_checksum']
+                          . "<BR><B>New checksum: </B>" . $item['new_checksum']
+                          . "</P>";
+                    }
+                    else
+                    {
+                        $results .= "<P><B>File: </B>" . $item['file']
+                          . "<BR><B>Checksum: </B>" . $item['checksum']
+                          . "</P>";
+                    }
+                }
+
+                $message = View::factory('autoresponder/' . $driver . '/alert')
+                    ->set('title', $title)
+                    ->set('results', $results);
+                $project_name = $this->_config['autoresponder']['project_name'];
+                $title .= ' in project: ' . $project_name;
+                $autoresponder->send_message($title, $message);
+            }
+
     }
 
 }
