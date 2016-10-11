@@ -33,11 +33,14 @@ class Controller_Sentinel extends Controller
     
     public function action_backup()
     {
-        $result = array('result' => 'OK');
+        $sentinel = Sentinel::instance();
+        $result = $sentinel->backup();
+
+        $result = array('result' => $result);
         $this->response->headers('Content-Type', 'application/json');
         $this->response->body(json_encode($result));        
     }
-    
+
     public function action_modified()
     {
         $sentinel = Sentinel::instance();

@@ -214,9 +214,9 @@
                             + "<BR><B>Original checksum: </B>" + data[i].original_checksum 
                             + "<BR><B>New checksum: </B>" + data[i].new_checksum                        
                             + '<span class="operations">'
-                            + '<a href="javascript:updateChecksum(' + data[i].id + ')" class="operation">Update</a>'
-                            + '<a href="javascript:repairFile(' + data[i].id + ')" class="operation">Repair</a>'
-                            + '<a href="javascript:deleteFile(' + data[i].id + ')" class="operation">Delete</a>'
+                            + '<a href="javascript:updateChecksum(' + data[i].index + ')" class="operation">Update</a>'
+                            + '<a href="javascript:repairFile(' + data[i].index + ')" class="operation">Repair</a>'
+                            + '<a href="javascript:deleteFile(' + data[i].index + ')" class="operation">Delete</a>'
                             + '</span>'
                             + "</p>")); 
                         }
@@ -255,8 +255,8 @@
                             $('#result-area').append($("<p><B>File: </B>" + data[i].file 
                             + "<BR><B>Checksum: </B>" + data[i].checksum 
                             + '<span class="operations">'
-                            + '<a href="javascript:register(' + data[i].id + ')" class="operation">Register</a>'
-                            + '<a href="javascript:deleteFile(' + data[i].id + ')" class="operation">Delete</a>'
+                            + '<a href="javascript:registerFile(' + data[i].index + ')" class="operation">Register</a>'
+                            + '<a href="javascript:deleteFile(' + data[i].index + ')" class="operation">Delete</a>'
                             + '</span>'
                             + "</p>")); 
                         }
@@ -295,8 +295,8 @@
                             $('#result-area').append($("<p><B>File: </B>" + data[i].file 
                             + "<BR><B>Checksum: </B>" + data[i].checksum 
                             + '<span class="operations">'
-                            + '<a href="javascript:restoreFile(' + data[i].id + ')" class="operation">Restore</a>'
-                            + '<a href="javascript:forgetDeleted(' + data[i].id + ')" class="operation">Forget</a>'
+                            + '<a href="javascript:restoreFile(' + data[i].index + ')" class="operation">Restore</a>'
+                            + '<a href="javascript:forgetDeleted(' + data[i].index + ')" class="operation">Forget</a>'
                             + '</span>'
                             + "</p>")); 
                         }
@@ -318,8 +318,20 @@
                 dataType: "json",
                 success: function (data)
                 {
-                    $('#message').hide();
-                }
+                    if (data.result == true)
+                    {
+                        $('#message-info').html("Backup was successfully created");
+                    }
+                    else
+                    {
+                        $('#message-info').html("Backup was not created");
+                    }
+                                                
+                    setTimeout(function () 
+                    {
+                        $('#message').fadeOut(1000);
+                    }, 4000);                    
+                }                
             });            
         }         
             
