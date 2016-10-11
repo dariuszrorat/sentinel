@@ -77,6 +77,7 @@
           width: 200px;
           height: 100px;
           border: 1px solid #aaa;
+          background: #afa;
           border-radius: 5px;
           position: relative;  
           left: 50%;
@@ -159,8 +160,12 @@
 	    src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     </script>
     <script>
+        var lock = false;
+
         function registerFiles()
         {
+            if (lock == true) return;
+            lock = true;
             $('#message-info').html("Registering files...");
             $('#message').show();
             $('#result-area').html("");
@@ -178,6 +183,7 @@
                     {
                         $('#result-area').append($("<p><B>File: </B>" + data[i].file + "<BR><B>Checksum: </B>" + data[i].checksum + "</p>")); 
                     }
+                    lock = false;
                 }
             });
             
@@ -185,6 +191,9 @@
         
         function findModified()
         {
+            if (lock == true) return;
+            lock = true;
+
             $('#message-info').html("Search for modified files...");
             $('#message').show();
             $('#result-area').html("");
@@ -201,7 +210,8 @@
                         $('#message-info').html("No modified or suspicious files detected.");                        
                         setTimeout(function () 
                         {
-                            $('#message').fadeOut(1000);
+                            $('#message').hide();
+                            lock = false;
                         }, 4000);                        
                     }
                     else
@@ -220,13 +230,18 @@
                             + '</span>'
                             + "</p>")); 
                         }
+                        lock = false;
                     }
+
                 }
             });            
         }      
 
         function findUnregistered()
         {
+            if (lock == true) return;
+            lock = true;
+
             $('#message-info').html("Search for unregistered files...");
             $('#message').show();
             $('#result-area').html("");
@@ -243,7 +258,8 @@
                         $('#message-info').html("No unregistered or suspicious files detected.");                        
                         setTimeout(function () 
                         {
-                            $('#message').fadeOut(1000);
+                            $('#message').hide();
+                            lock = false;
                         }, 4000);                        
                     }
                     else
@@ -260,6 +276,7 @@
                             + '</span>'
                             + "</p>")); 
                         }
+                        lock = false;
                     }
                 }
             });            
@@ -267,6 +284,9 @@
 
         function findDeleted()
         {
+            if (lock == true) return;
+            lock = true;
+
             $('#message-info').html("Search for deleted files...");
             $('#message').show();
             $('#result-area').html("");
@@ -283,7 +303,8 @@
                         $('#message-info').html("No deleted files detected.");                        
                         setTimeout(function () 
                         {
-                            $('#message').fadeOut(1000);
+                            $('#message').hide();
+                            lock = false;
                         }, 4000);                        
                     }
                     else
@@ -300,6 +321,7 @@
                             + '</span>'
                             + "</p>")); 
                         }
+                        lock = false;
                     }
                 }
             });            
@@ -307,6 +329,9 @@
         
         function createBackup()
         {
+            if (lock == true) return;
+            lock = true;
+
             $('#message-info').html("Backup files...");
             $('#message').show();
             $('#result-area').html("");
@@ -329,14 +354,18 @@
                                                 
                     setTimeout(function () 
                     {
-                        $('#message').fadeOut(1000);
-                    }, 4000);                    
+                        $('#message').hide();
+                        lock = false;
+                    }, 4000);
                 }                
             });            
         }         
             
         function updateChecksum(id)
         {
+            if (lock == true) return;
+            lock = true;
+
             $('#message-info').html("Updating checksum...");
             $('#message').show();            
              
@@ -358,8 +387,9 @@
                                                 
                     setTimeout(function () 
                     {
-                        $('#message').fadeOut(1000);
-                    }, 4000);                    
+                        $('#message').hide();
+                        lock = false;
+                    }, 4000);
                 }
             });            
         }        
