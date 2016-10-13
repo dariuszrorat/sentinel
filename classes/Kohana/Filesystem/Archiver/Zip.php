@@ -4,11 +4,6 @@ defined('SYSPATH') or die('No direct script access.');
 
 class Kohana_Filesystem_Archiver_Zip extends Filesystem_Archiver
 {
-
-    public function __construct()
-    {
-        
-    }
     
     public function compress($source, $destination)
     {

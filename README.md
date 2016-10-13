@@ -15,7 +15,7 @@ Kohana::modules(array(
 
 ## Usage
 
- 1. Enter: `http://yoursite.com/sentinel`
+ 1. Enter: `http://yoursite.com/sentinel/filesystem`
  2. First register Your files
  3. Create backup
  4. Later find unregistered (not in list), deleted or modified files
@@ -37,58 +37,62 @@ sentinel.php
 ```php
 return array(
     'default' => array(
-        'directories' => array(
-            'scanned' => array(                //directories to scan
-                APPPATH,
-                MODPATH,
-                SYSPATN,
-                // and more if You want
+        'filesystem' => array(
+            'directories' => array(
+                'scanned' => array(
+                    APPPATH,
+                ),
+                'backup' => APPPATH . 'backup',
+                'logs' => APPPATH . 'logs',
+                'quarantine' => APPPATH . 'quarantine'
             ),
-            'backup' => APPPATH . 'backup',    // store Your backup (not scanned)
-            'logs' => APPPATH . 'logs',
-            'quarantine' => APPPATH . 'quarantine'
-        ),
-        'ignored' => array(                    // ignored files and dirs
-            'directories' => array(            // must contains full paths
-                APPPATH . 'backup',
-                APPPATH . 'cache',
-                APPPATH . 'logs'
+            'ignored' => array(
+                'directories' => array(
+                    APPPATH . 'cache',
+                    APPPATH . 'logs'
+                ),
+                'files' => array(
+                    '.svn',
+                    '.git',
+                    '.gitignore'
+                )
             ),
-            'files' => array(                  // only file names, without paths
-                '.svn',
-                '.git',
-                '.gitignore'
-            )
-        ),
-        'compression' => array(               // todo: GZIP, 7-zip, etc...
-            'type' => 'zip',
-            'include_subfolders' => true,     // not needed
-            'params' => array()
-        ),
-        'inspection' => array(
-            'checksum_storage' => array(
-                'type' => 'file',
-                'directory' => APPPATH . 'inspection',  // store checksum files
+            'compression' => array(
+                'type' => 'zip',
+                'include_subfolders' => true,
+                'params' => array()
             ),
-            'self_inspection' => true,
-            'on_detection' => Sentinel::NOTHING,
-            'caching'      => false,
-            'cache_life'   => 1209600,
+            'inspection' => array(
+                'checksum_storage' => array(
+                    'type' => 'file',
+                    'directory' => APPPATH . 'inspection',
+                ),
+                'self_inspection' => true,
+                'on_detection' => Sentinel::NOTHING,
+                'caching' => false,
+                'cache_life' => 1209600,
+            ),
+            'quarantine' => array(
+                'maxlife' => 604800,
+                'gc' => 500
+            ),
         ),
-        'quarantine' => array(
-            'maxlife' => 604800,
-            'gc' => 500
+        'database' => array(
+
+        ),
+        'http' => array(
+
         ),
         'autoresponder' => array(
-            'driver' => 'email',                        // default driver
+            'driver' => 'email',
             'enabled' => false,
             'project_name' => 'Kohana',
             'email' => array(
-                'sender'    => 'sender@domain',        // config your email.php
+                'sender' => 'sender@domain',
                 'recipient' => 'recipient@domain',
                 'mime_type' => 'text/html',
             ),
-            'sms' => array(                            // and more...
+            'sms' => array(
                 'recipient' => 'your phone number',
             ),
         ),
@@ -98,20 +102,11 @@ return array(
 
 ## Example Screens
 
-#### Do first:
-
 ![Registering files](images/register_files.png)
 
-#### Do next:
+![Find unregistered](images/unregistered_files.png)
 
-![Creating backup](images/create_backup.png)
+![Find modified](images/modified_files.png)
 
-#### Do later:
-
-![Find unregistered](images/find_unregistered.png)
-![Find deleted](images/find_deleted.png)
-
-#### This may be disabled if You want:
-
-![Inbox screen](images/inbox_screen.png)
+![Find deleted](images/deleted_files.png)
 

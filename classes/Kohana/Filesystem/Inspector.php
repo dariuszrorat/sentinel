@@ -37,7 +37,7 @@ class Kohana_Filesystem_Inspector
             try
             {
                 $fpath = $file->getRealPath();
-                if (!in_array($file->getFilename(), $this->_config['ignored']['files']))
+                if (!in_array($file->getFilename(), $this->_config['filesystem']['ignored']['files']))
                 {
                     $checksum = sha1_file($fpath);
                     $this->_index += 1;
@@ -56,7 +56,7 @@ class Kohana_Filesystem_Inspector
             }
         } elseif ($file->isDir())
         {
-            if (!in_array($file->getPathname(), $this->_config['ignored']['directories']))
+            if (!in_array($file->getPathname(), $this->_config['filesystem']['ignored']['directories']))
             {
                 $files = new DirectoryIterator($file->getPathname());
 
@@ -86,7 +86,7 @@ class Kohana_Filesystem_Inspector
             try
             {
                 $fpath = $file->getRealPath();
-                if (!in_array($file->getFilename(), $this->_config['ignored']['files']) && !$this->in_list($fpath, $checksums))
+                if (!in_array($file->getFilename(), $this->_config['filesystem']['ignored']['files']) && !$this->in_list($fpath, $checksums))
                 {
                     $checksum = sha1_file($fpath);
                     $this->_index += 1;
@@ -105,7 +105,7 @@ class Kohana_Filesystem_Inspector
             }
         } elseif ($file->isDir())
         {
-            if (!in_array($file->getPathname(), $this->_config['ignored']['directories']))
+            if (!in_array($file->getPathname(), $this->_config['filesystem']['ignored']['directories']))
             {
                 $files = new DirectoryIterator($file->getPathname());
                 while ($files->valid())
@@ -127,7 +127,7 @@ class Kohana_Filesystem_Inspector
 
     public function find_registered_files()
     {
-        $checkdir = $this->_config['inspection']['checksum_storage']['directory'];
+        $checkdir = $this->_config['filesystem']['inspection']['checksum_storage']['directory'];
         $checkfile = $checkdir . DIRECTORY_SEPARATOR . 'registered.ser';
         $registered = array();
 
@@ -152,7 +152,7 @@ class Kohana_Filesystem_Inspector
     {
         try
         {
-            $outdir = $this->_config['inspection']['checksum_storage']['directory'];
+            $outdir = $this->_config['filesystem']['inspection']['checksum_storage']['directory'];
             $outfile = $outdir . DIRECTORY_SEPARATOR . $file;
             file_put_contents($outfile, serialize($data), LOCK_EX);
             return true;

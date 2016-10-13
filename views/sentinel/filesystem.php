@@ -7,7 +7,8 @@
       body
       {
           width: 1000px;
-          margin: auto;    
+          margin: auto;
+          font-size: 14px;
       }       
       header
       {
@@ -74,7 +75,7 @@
       }
       .message
       {
-          width: 200px;
+          width: 300px;
           height: 100px;
           border: 1px solid #aaa;
           background: #afa;
@@ -82,7 +83,7 @@
           position: relative;  
           left: 50%;
           top: 50%;
-          margin-left: -100px;
+          margin-left: -150px;
           margin-top: -100px;
           display: none;
       }
@@ -172,7 +173,7 @@
             $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/register",
+                url: "/sentinel/filesystem/register",
                 data: {},
                 dataType: "json",
                 success: function (data)
@@ -200,7 +201,7 @@
             $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/modified",
+                url: "/sentinel/filesystem/modified",
                 data: {},
                 dataType: "json",
                 success: function (data)
@@ -248,7 +249,7 @@
             $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/unregistered",
+                url: "/sentinel/filesystem/unregistered",
                 data: {},
                 dataType: "json",
                 success: function (data)
@@ -293,7 +294,7 @@
             $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/deleted",
+                url: "/sentinel/filesystem/deleted",
                 data: {},
                 dataType: "json",
                 success: function (data)
@@ -338,7 +339,7 @@
             $('#result-title').html("");
             $.ajax({
                 type: "GET",
-                url: "/sentinel/backup",
+                url: "/sentinel/filesystem/backup",
                 data: {},
                 dataType: "json",
                 success: function (data)
@@ -371,7 +372,7 @@
              
             $.ajax({
                 type: "POST",
-                url: "/sentinel/updateone",
+                url: "/sentinel/filesystem/updateone",
                 data: {'id': id},
                 dataType: "json",
                 success: function (data)
