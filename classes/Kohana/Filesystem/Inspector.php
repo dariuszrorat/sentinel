@@ -39,7 +39,7 @@ class Kohana_Filesystem_Inspector
                 $fpath = $file->getRealPath();
                 if (!in_array($file->getFilename(), $this->_config['filesystem']['ignored']['files']))
                 {
-                    $checksum = sha1_file($fpath);
+                    $checksum = hash_file('sha512', $fpath);
                     $this->_index += 1;
                     $this->_registered[] = array(
                         'index' => $this->_index,
@@ -88,7 +88,7 @@ class Kohana_Filesystem_Inspector
                 $fpath = $file->getRealPath();
                 if (!in_array($file->getFilename(), $this->_config['filesystem']['ignored']['files']) && !$this->in_list($fpath, $checksums))
                 {
-                    $checksum = sha1_file($fpath);
+                    $checksum = hash_file('sha512', $fpath);
                     $this->_index += 1;
                     $this->_unregistered[] = array(
                         'index' => $this->_index,

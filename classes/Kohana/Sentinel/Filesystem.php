@@ -71,7 +71,7 @@ class Kohana_Sentinel_Filesystem extends Sentinel
             {
                 $index = $item['index'];
                 $checksum = $item['checksum'];
-                $fchecksum = sha1_file($file);
+                $fchecksum = hash_file('sha512', $file);
                 if ($checksum !== $fchecksum)
                 {
                     $this->_modified[] = array(
@@ -145,7 +145,7 @@ class Kohana_Sentinel_Filesystem extends Sentinel
         if (!empty($registered))
         {
             $file = $registered[$index]['file'];
-            $registered[$index]['checksum'] = sha1_file($file);
+            $registered[$index]['checksum'] = hash_file('sha512', $file);
             return $inspector->save('registered.ser', $registered);
         }
         return false;
